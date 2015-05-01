@@ -29,7 +29,7 @@ except ImportError as e:
 
 from dc2.core.database.controllers import BaseController
 from ..models import IPNetworks
-
+from dc2.core.modules.usersgroups.db.models import User
 
 class IPNetworkController(BaseController):
 
@@ -47,8 +47,21 @@ class IPNetworkController(BaseController):
     def find(self):
         pass
 
-    def new(self):
-        pass
+    def new(self, ipnetwork=None, description=None, username=None):
+        if ipnetwork is not None and username is not None:
+            try:
+                user = User.query.filter_by(username=username).first()
+                record = IPNetworks()
+                record.ipnetwork = ipnetwork
+                record.description = description
+                record.created_by = user
+                record.updated_by = user
+                record = self.add(record)
+                return record
+            except Exception:
+                print(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2].tb_lineno)
+                return None
+        return None
 
     def get(self):
         pass

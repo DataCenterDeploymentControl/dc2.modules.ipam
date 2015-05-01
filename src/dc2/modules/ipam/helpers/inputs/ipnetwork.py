@@ -26,7 +26,7 @@ import re
 def type_ipv4_network(value, name):
     cidr = re.compile('(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})\/(\d{1,2})')
     found = cidr.match(value)
-    if found is None or len(found.groups()) == 5:
+    if found is None or len(found.groups()) < 5:
         raise ValueError("{0}: {1} is not a valid IPv4 CIDR Compatible Network address".format(name, value))
     return value
 

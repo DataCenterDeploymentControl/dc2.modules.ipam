@@ -41,8 +41,11 @@ class IPNetworks(DB.Model):
     description = DB.Column(DB.String, nullable=True)
     created_at = DB.Column(DB.DateTime, default=datetime.datetime.now())
     updated_at = DB.Column(DB.DateTime, onupdate=datetime.datetime.now())
-    created_by = DB.Column(DB.Integer, DB.ForeignKey('users.id'), nullable=False)
-    updated_by = DB.Column(DB.Integer, DB.ForeignKey('users.id'), nullable=False)
+    created_by_user_id = DB.Column(DB.Integer, DB.ForeignKey('users.id'))
+    updated_by_user_id = DB.Column(DB.Integer, DB.ForeignKey('users.id'))
+    created_by = DB.relationship("User", uselist=False, foreign_keys="IPNetworks.created_by_user_id")
+    updated_by = DB.relationship("User", uselist=False, foreign_keys="IPNetworks.updated_by_user_id")
+
 
     @property
     def to_dict(self):

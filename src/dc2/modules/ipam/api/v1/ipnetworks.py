@@ -23,7 +23,7 @@ __author__ = 'stephan.adig'
 try:
     from flask_restful import Resource as RestResource
     from flask_restful.reqparse import RequestParser
-    from flask import request
+    from flask import g
 except ImportError as e:
     raise e
 
@@ -43,6 +43,7 @@ except ImportError as e:
 
 _ipnetwork_parser = RequestParser()
 _ipnetwork_parser.add_argument('ipnetwork', type=type_ipv4_network, required=True, help="IPNetwork")
+_ipnetwork_parser.add_argument('description', type=str, required=False, help="Description")
 
 class IPNetworkCollection(RestResource):
 
@@ -50,8 +51,22 @@ class IPNetworkCollection(RestResource):
         super(IPNetworkCollection, self).__init__(*args, **kwargs)
         self._ctl_ipnetworks = IPNetworkController(DB.session)
 
+    @needs_authentication
     def get(self):
         networklist = self._ctl_ipnetworks.list()
+        print(g.auth_token)
         if networklist is not None:
             return [network.to_dict for network in networklist], 200
+
+    @needs_authentication
+    def post(self):
+        args = _ipnetwork_parser.parse_args()
+        if g.auth_user is not None:
+            ipnetwork = self._ctl_ipnetworks.new(args.ipnetwork, args.description, g.auth_user)
+            if ipnetwork is not None:
+                return ipnetwork.to_dict, 201
+        return {'error': True, 'message': 'Something went wrong'}
+
+
+
 
