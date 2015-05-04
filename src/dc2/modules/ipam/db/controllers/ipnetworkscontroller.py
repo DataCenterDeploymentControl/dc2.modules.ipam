@@ -47,6 +47,19 @@ class IPNetworkController(BaseController):
     def find(self):
         pass
 
+
+    def find_by_network(self, ipnetwork=None):
+        if ipnetwork is not None:
+            try:
+                result = IPNetworks.query.filter_by(ipnetwork=ipnetwork).first()
+                if result is not None:
+                    return result
+                else:
+                    return None
+            except Exception as e:
+                return None
+        return None
+
     def new(self, ipnetwork=None, description=None, username=None):
         if ipnetwork is not None and username is not None:
             try:

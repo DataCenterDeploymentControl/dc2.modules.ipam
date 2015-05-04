@@ -20,3 +20,4 @@
 
 __author__ = 'stephan.adig'
 from .ipnetworks import IPNetworks
+from .ipaddresses import IPAddresses

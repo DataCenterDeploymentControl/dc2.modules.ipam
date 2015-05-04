@@ -29,6 +29,7 @@ except ImportError as e:
 
 
 try:
+    from dc2.core.application import app
     from dc2.core.database import DB
     from dc2.core.helpers import hash_generator
     from dc2.core.auth.decorators import needs_authentication, has_groups
@@ -41,34 +42,41 @@ try:
 except ImportError as e:
     raise(e)
 
-_ipnetwork_parser = RequestParser()
-_ipnetwork_parser.add_argument('ipnetwork', type=type_ipv4_network, required=True, help="IPNetwork")
-_ipnetwork_parser.add_argument('description', type=str, required=False, help="Description")
+try:
+    import ipaddress
+except ImportError as e:
+    raise(e)
 
 
-class IPNetworkCollection(RestResource):
+class IPNetworkInfos(RestResource):
 
     def __init__(self, *args, **kwargs):
-        super(IPNetworkCollection, self).__init__(*args, **kwargs)
-        self._ctl_ipnetworks = IPNetworkController(DB.session)
+        super(IPNetworkInfos, self).__init__(*args, **kwargs)
+        self._ctl_ipnetworks = IPNetworkController(DB.Session)
 
     @needs_authentication
-    @has_groups(['admin','users'])
-    def get(self):
-        networklist = self._ctl_ipnetworks.list()
-        print(g.auth_token)
-        if networklist is not None:
-            return [network.to_dict for network in networklist], 200
-
-    @needs_authentication
-    @has_groups(['admin','users'])
-    def post(self):
-        args = _ipnetwork_parser.parse_args()
-        if g.auth_user is not None:
-            ipnetwork = self._ctl_ipnetworks.new(args.ipnetwork, args.description, g.auth_user)
-            if ipnetwork is not None:
-                return ipnetwork.to_dict, 201
-        return {'error': True, 'message': 'Something went wrong'}
-
+    @has_groups(['admin', 'users'])
+    def get(self, ipnetwork=None):
+        app.logger.info('hello')
+        if ipnetwork is not None:
+            try:
+                rec_ipnetwork = self._ctl_ipnetworks.find_by_network(ipnetwork)
+                if rec_ipnetwork is not None:
+                    ipnetwork = ipaddress.ip_network(rec_ipnetwork.ipnetwork)
+                    ipnetwork_dict = dict(
+                        ip_version=ipnetwork.version,
+                        ip_is_private=ipnetwork.is_private,
+                        ip_is_multicast=ipnetwork.is_multicast,
+                        ip_network_address=ipnetwork.network_address,
+                        ip_broadcast_address=ipnetwork.broadcast_address,
+                        ip_netmask=ipnetwork.netmask,
+                        ip_hostmask=ipnetwork.hostmask,
+                        ip_max_usable_hosts=len(list(ipnetwork.hosts()))
+                    )
+                    return ipnetwork_dict, 200
+            except Exception as e:
+                app.logger.exception(msg="Exception Occured")
+                return {'error': True, 'message': e.args}, 400
+        return {'error': True, 'message': 'No Ip Address Given'}, 400
 
 
