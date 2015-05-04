@@ -52,6 +52,7 @@ class IPNetworkCollection(RestResource):
         self._ctl_ipnetworks = IPNetworkController(DB.session)
 
     @needs_authentication
+    @has_groups(['users'])
     def get(self):
         networklist = self._ctl_ipnetworks.list()
         print(g.auth_token)
@@ -59,6 +60,7 @@ class IPNetworkCollection(RestResource):
             return [network.to_dict for network in networklist], 200
 
     @needs_authentication
+    @has_groups(['users'])
     def post(self):
         args = _ipnetwork_parser.parse_args()
         if g.auth_user is not None:

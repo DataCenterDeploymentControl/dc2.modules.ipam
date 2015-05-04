@@ -52,7 +52,7 @@ class IPNetworks(DB.Model):
         return dict(
             id=self.id,
             ipnetwork=self.ipnetwork,
-            descsription=self.description,
+            description=self.description,
             created_at=self.created_at.isoformat(),
             updated_at=self.updated_at.isoformat() if self.updated_at is not None else None,
             created_by=self.created_by.username,
