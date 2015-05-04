@@ -26,7 +26,7 @@ from .ipnetworkinfo import IPNetworkInfos
 def init_versioned_endpoints(bp_api=None):
     if bp_api is None:
         raise ValueError('bp_api can not be None')
-    bp_api.add_resource(IPNetworkInfos, '/v1/ipnetworks/info/<string:ipnetwork>')
+    bp_api.add_resource(IPNetworkInfos, '/v1/ipnetworks/info')
     bp_api.add_resource(IPNetworkCollection, '/v1/ipnetworks')
     # bp_api.add_resource(UserRecords, '/v1/users/<string:id>')
     # bp_api.add_resource(GroupCollection, '/v1/groups')

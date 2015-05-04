@@ -47,6 +47,8 @@ try:
 except ImportError as e:
     raise(e)
 
+_ipinfo_parser = RequestParser()
+_ipinfo_parser.add_argument('ipnetwork', default=None, type=str, location="args")
 
 class IPNetworkInfos(RestResource):
 
@@ -56,21 +58,23 @@ class IPNetworkInfos(RestResource):
 
     @needs_authentication
     @has_groups(['admin', 'users'])
-    def get(self, ipnetwork=None):
+    def get(self):
         app.logger.info('hello')
-        if ipnetwork is not None:
+        args = _ipinfo_parser.parse_args()
+        if args.ipnetwork is not None:
+            app.logger.info(args.ipnetwork)
             try:
-                rec_ipnetwork = self._ctl_ipnetworks.find_by_network(ipnetwork)
+                rec_ipnetwork = self._ctl_ipnetworks.find_by_network(args.ipnetwork)
                 if rec_ipnetwork is not None:
                     ipnetwork = ipaddress.ip_network(rec_ipnetwork.ipnetwork)
                     ipnetwork_dict = dict(
                         ip_version=ipnetwork.version,
                         ip_is_private=ipnetwork.is_private,
                         ip_is_multicast=ipnetwork.is_multicast,
-                        ip_network_address=ipnetwork.network_address,
-                        ip_broadcast_address=ipnetwork.broadcast_address,
-                        ip_netmask=ipnetwork.netmask,
-                        ip_hostmask=ipnetwork.hostmask,
+                        ip_network_address=str(ipnetwork.network_address),
+                        ip_broadcast_address=str(ipnetwork.broadcast_address),
+                        ip_netmask=str(ipnetwork.netmask),
+                        ip_hostmask=str(ipnetwork.hostmask),
                         ip_max_usable_hosts=len(list(ipnetwork.hosts()))
                     )
                     return ipnetwork_dict, 200
