@@ -21,3 +21,5 @@
 __author__ = 'stephan.adig'
 
 from .ipnetworkscontroller import IPNetworkController
+from .ipaddressescontroller import IPAddressesController
+from .hostentrycontroller import HostEntryController

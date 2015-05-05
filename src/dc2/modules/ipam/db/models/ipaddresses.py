@@ -40,6 +40,8 @@ class IPAddresses(DB.Model):
     ipaddress = DB.Column(INET, nullable=True, unique=True)
     ipnetwork_id = DB.Column(DB.Integer, DB.ForeignKey('ipnetworks.id'))
     ipnetwork = DB.relationship('IPNetworks', uselist=False, foreign_keys="IPAddresses.ipnetwork_id")
+    hostentry_id = DB.Column(DB.Integer, DB.ForeignKey('hostentries.id'))
+    hostentry = DB.relationship('HostEntry', uselist=False, foreign_keys="IPAddresses.hostentry_id")
     created_at = DB.Column(DB.DateTime, default=datetime.datetime.now())
     updated_at = DB.Column(DB.DateTime, onupdate=datetime.datetime.now())
     created_by_user_id = DB.Column(DB.Integer, DB.ForeignKey('users.id'))
@@ -52,8 +54,8 @@ class IPAddresses(DB.Model):
         return dict(id=self.id,
                     ipaddress=self.ipaddress,
                     ipnetwork=self.ipnetwork.ipnetwork,
-                    created_at=self.created_at.isoformat(),
+                    created_at=self.created_at.isoformat() if self.created_at is not None else None,
                     updated_at=self.updated_at.isoformat() if self.updated_at is not None else None,
-                    created_by=self.created_by.username,
+                    created_by=self.created_by.username if self.created_by is not None else None,
                     updated_by=self.updated_by.username if self.updated_by is not None else None
                     )

@@ -19,6 +19,7 @@
 #
 
 __author__ = 'stephan.adig'
+import sys
 
 try:
     from flask_restful import Resource as RestResource
@@ -38,7 +39,7 @@ except ImportError as e:
 
 try:
     from ...helpers.inputs.ipnetwork import type_ipv4_network
-    from ...db.controllers import IPNetworkController
+    from ...db.controllers import IPNetworkController, IPAddressesController
 except ImportError as e:
     raise(e)
 
@@ -54,12 +55,12 @@ class IPNetworkInfos(RestResource):
 
     def __init__(self, *args, **kwargs):
         super(IPNetworkInfos, self).__init__(*args, **kwargs)
-        self._ctl_ipnetworks = IPNetworkController(DB.Session)
+        self._ctl_ipnetworks = IPNetworkController(DB.session)
 
     @needs_authentication
     @has_groups(['admin', 'users'])
     def get(self):
-        app.logger.info('hello')
+        app.logger.debug('{0}.{1}'.format(self.__class__.__name__, sys._getframe().f_code.co_name))
         args = _ipinfo_parser.parse_args()
         if args.ipnetwork is not None:
             app.logger.info(args.ipnetwork)
@@ -75,7 +76,8 @@ class IPNetworkInfos(RestResource):
                         ip_broadcast_address=str(ipnetwork.broadcast_address),
                         ip_netmask=str(ipnetwork.netmask),
                         ip_hostmask=str(ipnetwork.hostmask),
-                        ip_max_usable_hosts=len(list(ipnetwork.hosts()))
+                        ip_max_usable_hosts=ipnetwork.num_addresses-2,
+                        ip_max_ipaddresses=ipnetwork.num_addresses,
                     )
                     return ipnetwork_dict, 200
             except Exception as e:
@@ -84,3 +86,26 @@ class IPNetworkInfos(RestResource):
         return {'error': True, 'message': 'No Ip Address Given'}, 400
 
 
+class IPNetworkUsedIPs(RestResource):
+
+    def __init__(self, *args, **kwargs):
+        super(IPNetworkUsedIPs, self).__init__(*args, **kwargs)
+        self._ctl_ipnetworks = IPNetworkController(DB.session)
+        self._ctl_ipaddresses = IPAddressesController(DB.session)
+
+    @needs_authentication
+    @has_groups(['admin', 'users'])
+    def get(self):
+        app.logger.info('{0}.{1}'.format(self.__class__.__name__, sys._getframe().f_code.co_name))
+        args = _ipinfo_parser.parse_args()
+        if args.ipnetwork is not None:
+            try:
+                rec_ipnetwork = self._ctl_ipnetworks.find_by_network(args.ipnetwork)
+                if rec_ipnetwork is not None:
+                    result = self._ctl_ipaddresses.list(rec_ipnetwork)
+                    if result is not None:
+                        return [ip.to_dict for ip in result], 200
+            except Exception as e:
+                app.logger.exception(msg="Exception occured")
+                return {'error': True, 'message': e.args}, 400
+        return {'error': True, 'message': 'No Ip Address Given'}, 400

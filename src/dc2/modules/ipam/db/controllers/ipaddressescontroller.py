@@ -20,16 +20,41 @@
 
 __author__ = 'stephan.adig'
 
-from .ipnetworks import IPNetworkCollection
-from .ipnetworkinfo import IPNetworkInfos, IPNetworkUsedIPs
+import sys
 
+try:
+    from sqlalchemy.exc import IntegrityError
+except ImportError as e:
+    raise e
 
-def init_versioned_endpoints(bp_api=None):
-    if bp_api is None:
-        raise ValueError('bp_api can not be None')
-    bp_api.add_resource(IPNetworkUsedIPs, '/v1/ipnetworks/used')
-    bp_api.add_resource(IPNetworkInfos, '/v1/ipnetworks/info')
-    bp_api.add_resource(IPNetworkCollection, '/v1/ipnetworks')
-    # bp_api.add_resource(UserRecords, '/v1/users/<string:id>')
-    # bp_api.add_resource(GroupCollection, '/v1/groups')
-    # bp_api.add_resource(GroupRecords, '/v1/groups/<string:groupname>')
+from dc2.core.database.controllers import BaseController
+from ..models import IPNetworks, IPAddresses
+from dc2.core.modules.usersgroups.db.models import User
+
+class IPAddressesController(BaseController):
+
+    def __init__(self, session=None):
+        super(IPAddressesController, self).__init__(session)
+
+    def list(self, ipnetwork=None):
+        try:
+            result = IPAddresses.query.filter_by(ipnetwork=ipnetwork).all()
+            return result
+        except Exception as e:
+            print(e)
+            return None
+
+    def find(self):
+        pass
+
+    def new(self):
+        pass
+
+    def get(self):
+        pass
+
+    def delelte(self):
+        pass
+
+    def update(self):
+        pass

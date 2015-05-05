@@ -38,13 +38,15 @@ class HostEntry(DB.Model):
 
     id = DB.Column(DB.Integer, primary_key=True)
     hostname = DB.Column(DB.String, nullable=False, unique=False)
-    hosttype = DB.Column(DB.Enum('A', 'CNAME', 'SRV', 'TXT'), nullable=False, )
+    # domainzone_id = DB.Column(DB.Integer, DB.ForeignKey('domainzones.id'))
+    # domainzone = DB.relationship('DomainZone', uselist=False, foreign_keys="HostEntry.domainzone_id")
+    ipaddresses = DB.relationship('IPAddresses', backref="hostentries")
     created_at = DB.Column(DB.DateTime, default=datetime.datetime.now())
     updated_at = DB.Column(DB.DateTime, onupdate=datetime.datetime.now())
     created_by_user_id = DB.Column(DB.Integer, DB.ForeignKey('users.id'))
     updated_by_user_id = DB.Column(DB.Integer, DB.ForeignKey('users.id'))
-    created_by = DB.relationship("User", uselist=False, foreign_keys="IPNetworks.created_by_user_id")
-    updated_by = DB.relationship("User", uselist=False, foreign_keys="IPNetworks.updated_by_user_id")
+    created_by = DB.relationship("User", uselist=False, foreign_keys="HostEntry.created_by_user_id")
+    updated_by = DB.relationship("User", uselist=False, foreign_keys="HostEntry.updated_by_user_id")
 
     def to_dict(self):
         return dict(id=self.id,
