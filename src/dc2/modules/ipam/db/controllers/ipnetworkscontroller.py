@@ -23,13 +23,15 @@ __author__ = 'stephan.adig'
 import sys
 
 try:
-    from sqlalchemy.exc import IntegrityError
+    import sqlalchemy.exc
 except ImportError as e:
     raise e
 
 from dc2.core.database.controllers import BaseController
 from ..models import IPNetworks
 from dc2.core.modules.usersgroups.db.models import User
+from dc2.core.database.errors import lookup_error
+
 
 class IPNetworkController(BaseController):
 
@@ -71,9 +73,12 @@ class IPNetworkController(BaseController):
                 record.updated_by = user
                 record = self.add(record)
                 return record
-            except Exception:
+            except sqlalchemy.exc.IntegrityError as e:
+                raise lookup_error(exc=e)
+            except Exception as e:
+                print(type(e))
                 print(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2].tb_lineno)
-                return None
+                raise lookup_error(exc=e)
         return None
 
     def get(self):

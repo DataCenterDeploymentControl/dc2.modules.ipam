@@ -49,7 +49,7 @@ class HostEntryController(BaseController):
         pass
 
     def new(self, hostname=None, username=None):
-        if hostname is not None and username is not None and ipaddress is not None:
+        if hostname is not None and username is not None:
             try:
                 user = User.query.filter_by(username=username).first()
                 hostentry = HostEntry()
@@ -62,19 +62,26 @@ class HostEntryController(BaseController):
                 return None
         return None
 
-    def new_with_ipaddress(self, hostname=None, ipaddress=None, username=None):
-        if hostname is not None and ipaddress is not None and username is not None:
+    def new_with_ipaddress(self, hostname=None, ipaddress=None, ipnetwork=None, username=None):
+        if hostname is not None and ipaddress is not None and username is not None and ipnetwork is not None:
             try:
                 user = User.query.filter_by(username=username).first()
-                hostentry = self.new(hostname, username)
-                ipaddress = IPAddress()
-                ipaddress.ipaddress = ipaddress
-                ipaddress.user = user
-                result = self.add(ipaddress)
+                print(user.username)
+                print(user.id)
+                ipnetwork_rec = IPNetworks.query.filter_by(ipnetwork=ipnetwork).first()
+                hostentry = HostEntry.query.filter_by(hostname=hostname).first()
+                if hostentry is None:
+                    hostentry = self.new(hostname, username)
+                ipaddress_rec = IPAddresses()
+                ipaddress_rec.ipaddress = ipaddress
+                ipaddress_rec.created_by = user
+                ipaddress_rec.ipnetwork = ipnetwork_rec
+                ipaddress_rec.hostentry = hostentry
+                result = self.add(ipaddress_rec)
                 return hostentry, result
             except Exception as e:
-                print(e)
-                return None, None
+                raise e
+
         return None, None
 
     def get(self):

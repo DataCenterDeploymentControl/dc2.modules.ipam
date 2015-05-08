@@ -29,8 +29,10 @@ except ImportError as e:
 
 
 try:
+    from dc2.core.application import app
     from dc2.core.database import DB
     from dc2.core.helpers import hash_generator
+    from dc2.core.database.errors import lookup_error
     from dc2.core.auth.decorators import needs_authentication, has_groups
 except ImportError as e:
     raise e
@@ -65,10 +67,14 @@ class IPNetworkCollection(RestResource):
     def post(self):
         args = _ipnetwork_parser.parse_args()
         if g.auth_user is not None:
-            ipnetwork = self._ctl_ipnetworks.new(args.ipnetwork, args.description, g.auth_user)
-            if ipnetwork is not None:
-                return ipnetwork.to_dict, 201
-        return {'error': True, 'message': 'Something went wrong'}
+            try:
+                ipnetwork = self._ctl_ipnetworks.new(args.ipnetwork, args.description, g.auth_user)
+                if ipnetwork is not None:
+                    return ipnetwork.to_dict, 201
+            except Exception as e:
+                app.logger.exception(msg="Exception occured")
+                return {'error': True, 'error_code': e.error_code, 'error_message': e.error_message}, 400
+        return {'error': True, 'message': 'Something went wrong'}, 400
 
 
 

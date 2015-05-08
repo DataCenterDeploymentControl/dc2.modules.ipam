@@ -54,6 +54,7 @@ class IPAddresses(DB.Model):
         return dict(id=self.id,
                     ipaddress=self.ipaddress,
                     ipnetwork=self.ipnetwork.ipnetwork,
+                    hostname=self.hostentry.hostname,
                     created_at=self.created_at.isoformat() if self.created_at is not None else None,
                     updated_at=self.updated_at.isoformat() if self.updated_at is not None else None,
                     created_by=self.created_by.username if self.created_by is not None else None,

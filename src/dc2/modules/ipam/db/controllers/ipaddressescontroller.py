@@ -38,7 +38,7 @@ class IPAddressesController(BaseController):
 
     def list(self, ipnetwork=None):
         try:
-            result = IPAddresses.query.filter_by(ipnetwork=ipnetwork).all()
+            result = IPAddresses.query.filter_by(ipnetwork=ipnetwork).order_by(IPAddresses.ipaddress.desc()).all()
             return result
         except Exception as e:
             print(e)

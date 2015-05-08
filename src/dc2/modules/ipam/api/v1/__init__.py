@@ -22,6 +22,7 @@ __author__ = 'stephan.adig'
 
 from .ipnetworks import IPNetworkCollection
 from .ipnetworkinfo import IPNetworkInfos, IPNetworkUsedIPs
+from .hostentries import HostEntryCollection
 
 
 def init_versioned_endpoints(bp_api=None):
@@ -30,6 +31,8 @@ def init_versioned_endpoints(bp_api=None):
     bp_api.add_resource(IPNetworkUsedIPs, '/v1/ipnetworks/used')
     bp_api.add_resource(IPNetworkInfos, '/v1/ipnetworks/info')
     bp_api.add_resource(IPNetworkCollection, '/v1/ipnetworks')
+    bp_api.add_resource(HostEntryCollection, '/v1/hostentries')
+
     # bp_api.add_resource(UserRecords, '/v1/users/<string:id>')
     # bp_api.add_resource(GroupCollection, '/v1/groups')
     # bp_api.add_resource(GroupRecords, '/v1/groups/<string:groupname>')

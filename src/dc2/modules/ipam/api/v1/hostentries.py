@@ -23,13 +23,15 @@ __author__ = 'stephan.adig'
 try:
     from flask_restful import Resource as RestResource
     from flask_restful.reqparse import RequestParser
-    from flask import g
+    from flask import g, request
 except ImportError as e:
     raise e
 
 
 try:
+    from dc2.core.application import app
     from dc2.core.database import DB
+    from dc2.core.database.errors import lookup_error
     from dc2.core.helpers import hash_generator
     from dc2.core.auth.decorators import needs_authentication, has_groups
 except ImportError as e:
@@ -44,6 +46,7 @@ except ImportError as e:
 _hostentry_parser = RequestParser()
 _hostentry_parser.add_argument('hostname', type=str, required=True, location="json")
 _hostentry_parser.add_argument('ipaddress', type=str, required=True, location="json")
+_hostentry_parser.add_argument('ipnetwork', type=str, required=True, location="json")
 
 class HostEntryCollection(RestResource):
 
@@ -64,13 +67,17 @@ class HostEntryCollection(RestResource):
     def post(self):
         args = _hostentry_parser.parse_args()
         if g.auth_user is not None:
-            hostentry, ipaddress = self._ctl_hostentries.new_with_ipaddress(args.hostname, args.ipaddress, g.auth_user)
-            if hostentry is not None and ipaddress is not None:
-                return {
-                    'hostentry': hostentry.to_dict,
-                    'ipaddress': ipaddress.to_dict
-                }, 200
-        return {'error': True, 'message': 'Something went wrong'}
+            try:
+                hostentry, ipaddress = self._ctl_hostentries.new_with_ipaddress(hostname=args.hostname, ipaddress=args.ipaddress, ipnetwork=args.ipnetwork, username=g.auth_user)
+                if hostentry is not None and ipaddress is not None:
+                    return {
+                        'hostname': hostentry.hostname,
+                        'ipaddress': ipaddress.ipaddress
+                    }, 200
+            except Exception as e:
+                app.logger.exception(msg="Exception occured")
+                return {'error': True, 'message': lookup_error(error_code=e.orig.pgcode, format_entries=[e.orig.diag.message_primary])}, 400
+        return {'error': True, 'message': 'Something went wrong'}, 400
 
 
 
