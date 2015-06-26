@@ -48,8 +48,8 @@ try:
 except ImportError as e:
     raise(e)
 
-_ipinfo_parser = RequestParser()
-_ipinfo_parser.add_argument('ipnetwork', default=None, type=str, location="args")
+# _ipinfo_parser = RequestParser()
+# _ipinfo_parser.add_argument('ipnetwork', default=None, type=str, location="args")
 
 class IPNetworkInfos(RestResource):
 
@@ -59,11 +59,11 @@ class IPNetworkInfos(RestResource):
 
     @needs_authentication
     @has_groups(['admin', 'users'])
-    def get(self):
+    def get(self, id):
         app.logger.debug('{0}.{1}'.format(self.__class__.__name__, sys._getframe().f_code.co_name))
-        args = _ipinfo_parser.parse_args()
-        if args.ipnetwork is not None:
-            app.logger.info(args.ipnetwork)
+        # args = _ipinfo_parser.parse_args()
+        if id is not None and id != 0:
+            app.logger.info(id)
             try:
                 rec_ipnetwork = self._ctl_ipnetworks.find_by_network(args.ipnetwork)
                 if rec_ipnetwork is not None:
